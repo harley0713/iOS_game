@@ -24,18 +24,28 @@ class MainScene: SKScene {
         self.addChild(mainbgd)
         
         let Lwall = SKSpriteNode(imageNamed: "wall")
-        Lwall.size.width = 1;
+        Lwall.size.width = 20;
         Lwall.size.height = self.size.height
         Lwall.physicsBody?.isDynamic = false
-        Lwall.position = CGPoint(x: 0 , y: self.size.height/2)
+        Lwall.position = CGPoint(x: 10 , y: self.size.height/2)
+        Lwall.zPosition = 1
         self.addChild(Lwall)
         
         let Rwall = SKSpriteNode(imageNamed: "wall")
-        Rwall.size.width = 1;
+        Rwall.size.width = 20;
         Rwall.size.height = self.size.height
         Rwall.physicsBody?.isDynamic = false
-        Rwall.position = CGPoint(x: self.size.width, y: self.size.height/2)
+        Rwall.position = CGPoint(x: self.size.width - 10, y: self.size.height/2)
+        Rwall.zPosition = 1
         self.addChild(Rwall)
+        
+        let ceiling = SKSpriteNode(imageNamed: "ceiling")
+        ceiling.size.width = self.size.width
+        ceiling.size.height = 20;
+        ceiling.physicsBody?.isDynamic = false
+        ceiling.position = CGPoint(x: self.size.width/2, y: self.size.height - 10)
+        ceiling.zPosition = 1
+        self.addChild(ceiling)
     }
     
     
