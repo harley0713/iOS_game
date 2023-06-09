@@ -17,8 +17,6 @@ class MainScene: SKScene,SKPhysicsContactDelegate {
     var stair: SKSpriteNode!
     var spike: SKSpriteNode!
     var stairGenerator: Timer!
-    var xStair: CGFloat = 70.0
-    var xSpike: CGFloat = 70.0
      
     override func didMove(to view: SKView) {
         createScene()
@@ -58,18 +56,27 @@ class MainScene: SKScene,SKPhysicsContactDelegate {
         ceiling.zPosition = 1
         self.addChild(ceiling)
         
-        stairGenerator = Timer.scheduledTimer(timeInterval: 1.5, target: self, selector: #selector(newStair), userInfo: nil, repeats: true)
+        stairGenerator = Timer.scheduledTimer(timeInterval: 1.0, target: self, selector: #selector(newStep), userInfo: nil, repeats: true)
         //spikeGenerator = Timer.scheduledTimer(timeInterval: 6.7, target: self, selector: #selector(newSpike), userInfo: nil, repeats: true)
     }
     
-    @objc func newStair(){
+    
+    @objc func newStep(){
+        let randNum = Int(arc4random() % 100)
+        if(randNum > 85){
+            newSpike()
+        }else{
+            newStair()
+        }
+    }
+    
+    func newStair(){
         stair = SKSpriteNode(imageNamed: "normal")
         stair.size = CGSize(width: 100, height: 20)
         let remove = SKAction.sequence([SKAction.moveTo(y: self.size.height + 150, duration: 7),SKAction.removeFromParent()])
         let w = self.size.width - 140
-        xStair = CGFloat(arc4random()).truncatingRemainder(dividingBy: w) + 70
-        //let spikeGenerator =
-        stair.position = CGPoint(x: xStair, y: 0)
+        let x = CGFloat(arc4random()).truncatingRemainder(dividingBy: w) + 70
+        stair.position = CGPoint(x: x, y: 0)
         stair.name = "stairs"
         stair.physicsBody = SKPhysicsBody(rectangleOf: CGSize(width: 100, height: 20))
         stair.physicsBody?.usesPreciseCollisionDetection = true
@@ -79,13 +86,13 @@ class MainScene: SKScene,SKPhysicsContactDelegate {
         
     }
     
-    @objc func newSpike(){
+    func newSpike(){
         spike = SKSpriteNode(imageNamed: "spike")
         spike.size = CGSize(width: 100, height: 30)
         let remove = SKAction.sequence([SKAction.moveTo(y: self.size.height + 150, duration: 7),SKAction.removeFromParent()])
         let w = self.size.width - 140
-        xSpike = CGFloat(arc4random()).truncatingRemainder(dividingBy: w) + 70
-        spike.position = CGPoint(x: xSpike, y: 0)
+        let x = CGFloat(arc4random()).truncatingRemainder(dividingBy: w) + 70
+        spike.position = CGPoint(x: x, y: 0)
         spike.name = "spikes"
         spike.physicsBody = SKPhysicsBody(rectangleOf: CGSize(width: 100, height: 30))
         spike.physicsBody?.usesPreciseCollisionDetection = true
