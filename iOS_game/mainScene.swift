@@ -9,18 +9,21 @@
 import UIKit
 import SpriteKit
 
-class MainScene: SKScene {
+class MainScene: SKScene,SKPhysicsContactDelegate {
     var mainbgd: SKSpriteNode!
     var Lwall: SKSpriteNode!
     var Rwall: SKSpriteNode!
     var ceiling: SKSpriteNode!
     var stair: SKSpriteNode!
     var spike: SKSpriteNode!
+    var stairGenerator: Timer!
+    var xStair: CGFloat = 70.0
+    var xSpike: CGFloat = 70.0
      
     override func didMove(to view: SKView) {
         createScene()
         physicsWorld.gravity = CGVector(dx: 0, dy: -9.8)
-        //print(self.size.width)
+        print(self.size.width)
     }
     
     func createScene(){
@@ -54,28 +57,40 @@ class MainScene: SKScene {
         ceiling.position = CGPoint(x: self.size.width/2, y: self.size.height - 10)
         ceiling.zPosition = 1
         self.addChild(ceiling)
+        
+        stairGenerator = Timer.scheduledTimer(timeInterval: 1.5, target: self, selector: #selector(newStair), userInfo: nil, repeats: true)
+        //spikeGenerator = Timer.scheduledTimer(timeInterval: 6.7, target: self, selector: #selector(newSpike), userInfo: nil, repeats: true)
     }
     
     @objc func newStair(){
         stair = SKSpriteNode(imageNamed: "normal")
-        //stair.size = CGSize(width: 40, height: 10)
-        let remove = SKAction.sequence([SKAction.wait(forDuration: 10),SKAction.removeFromParent()])
-        let w = self.size.width
-        let h = 60
-        let x = CGFloat(arc4random()).truncatingRemainder(dividingBy: w)
-        stair.position = CGPoint(x: x, y: h)
-        stair.name = "stair"
-        self.addChild(stair)
+        stair.size = CGSize(width: 100, height: 20)
+        let remove = SKAction.sequence([SKAction.moveTo(y: self.size.height + 150, duration: 7),SKAction.removeFromParent()])
+        let w = self.size.width - 140
+        xStair = CGFloat(arc4random()).truncatingRemainder(dividingBy: w) + 70
+        //let spikeGenerator =
+        stair.position = CGPoint(x: xStair, y: 0)
+        stair.name = "stairs"
+        stair.physicsBody = SKPhysicsBody(rectangleOf: CGSize(width: 100, height: 20))
         stair.physicsBody?.usesPreciseCollisionDetection = true
-        stair.physicsBody?.affectedByGravity = false
+        stair.run(remove)
+        self.addChild(stair)
+        
         
     }
     
     @objc func newSpike(){
-        spike = SKSpriteNode(imageNamed: "nail")
-        
-        let remove = SKAction.sequence([SKAction.wait(forDuration: 10),SKAction.removeFromParent()])
-        let w = self.size.width
+        spike = SKSpriteNode(imageNamed: "spike")
+        spike.size = CGSize(width: 100, height: 30)
+        let remove = SKAction.sequence([SKAction.moveTo(y: self.size.height + 150, duration: 7),SKAction.removeFromParent()])
+        let w = self.size.width - 140
+        xSpike = CGFloat(arc4random()).truncatingRemainder(dividingBy: w) + 70
+        spike.position = CGPoint(x: xSpike, y: 0)
+        spike.name = "spikes"
+        spike.physicsBody = SKPhysicsBody(rectangleOf: CGSize(width: 100, height: 30))
+        spike.physicsBody?.usesPreciseCollisionDetection = true
+        self.addChild(spike)
+        spike.run(remove)
     }
     
 }
