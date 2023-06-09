@@ -13,6 +13,7 @@ class StartScene: SKScene {
     
     override func didMove(to view: SKView) {
         createScene()
+        //print(self.size.width)
     }
     
     func createScene(){
