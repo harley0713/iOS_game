@@ -10,6 +10,11 @@ import UIKit
 import SpriteKit
 
 class MainScene: SKScene,SKPhysicsContactDelegate {
+    
+    struct Score: Codable{
+        var highScore: Int
+    }
+    var highScore: Int = 0
     var mainbgd: SKSpriteNode!
     var Lwall: SKSpriteNode!
     var Rwall: SKSpriteNode!
@@ -22,6 +27,7 @@ class MainScene: SKScene,SKPhysicsContactDelegate {
     var player: SKSpriteNode!
      
     override func didMove(to view: SKView) {
+        self.getBestScore()
         createScene()
         physicsWorld.gravity = CGVector(dx: 0, dy: -9.8)
         print(self.size.width)
@@ -91,6 +97,7 @@ class MainScene: SKScene,SKPhysicsContactDelegate {
     func createPlayer()->SKSpriteNode{
         player = SKSpriteNode(imageNamed: "player")
         player.position = CGPoint(x: self.size.width/2, y: 120)
+        
         player.name = "player"
         
         return player
@@ -132,6 +139,14 @@ class MainScene: SKScene,SKPhysicsContactDelegate {
         spike.physicsBody?.usesPreciseCollisionDetection = true
         self.addChild(spike)
         spike.run(remove)
+    }
+    
+    func getBestScore(){
+        if let path = Bundle.main.path(forResource: "score", ofType: "plist"),
+           let file = FileManager.default.contents(atPath: path),
+           let hs = try? PropertyListDecoder().decode(Score.self, from: file){
+            self.highScore = hs.highScore
+        }
     }
     
 }

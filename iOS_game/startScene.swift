@@ -10,8 +10,13 @@ import SpriteKit
 
 class StartScene: SKScene {
     
+    struct Score: Codable{
+        var highScore: Int
+    }
+    var highScore: Int = 0
     
     override func didMove(to view: SKView) {
+        self.getBestScore()
         createScene()
         //print(self.size.width)
     }
@@ -37,11 +42,27 @@ class StartScene: SKScene {
         StartB.position = CGPoint(x: self.frame.midX + 80, y: self.frame.midY - 80)
         StartB.zPosition = 1
         
+        let best = SKLabelNode()
+        best.text = "Highest Score:\n\(highScore)"
+        best.numberOfLines = 0
+        best.position = CGPoint(x: self.frame.midX + 80, y: self.frame.midY - 200)
+        best.fontName = "Avenir-Oblique"
+        best.fontColor = .black
+        best.fontSize = 20
         
         
         self.addChild(bgd)
         self.addChild(Title)
         self.addChild(StartB)
+        self.addChild(best)
+    }
+    
+    func getBestScore(){
+        if let path = Bundle.main.path(forResource: "score", ofType: "plist"),
+           let file = FileManager.default.contents(atPath: path),
+           let hs = try? PropertyListDecoder().decode(Score.self, from: file){
+            self.highScore = hs.highScore
+        }
     }
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
