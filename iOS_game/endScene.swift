@@ -17,16 +17,16 @@ class endScene: SKScene {
     var highScore:Int = 0
     var label1: SKLabelNode!
     var label2: SKLabelNode!
-    var tmp1: Int = 0
+    var tmp: Int = 0
     
     
     override func didMove(to view: SKView) {
         
-        
         createScene()
         let Data = Score(highscore: self.highScore)
-        print(Data.highscore)
         self.setBestScore(data: Data)
+        self.getBestScore()
+        print("\(tmp)")
         //print(self.size.width)
     }
     
@@ -88,13 +88,23 @@ class endScene: SKScene {
                 let data = try PropertyListEncoder().encode(data)
                 try data.write(to: path)
                 print("written")
-                if let tmp = try? PropertyListDecoder().decode(Score.self, from: data){
-                    self.tmp1 = tmp.highscore
-                    print("\(self.tmp1)")
-                }
+                /*
+                 if let tmp = try? PropertyListDecoder().decode(Score.self, from: data){
+                     self.tmp1 = tmp.highscore
+                     print("\(self.tmp1)")
+                 }
+                 */
             }catch{
                 print(error)
             }
+        }
+    }
+    
+    func getBestScore(){
+        if let path = Bundle.main.path(forResource: "score", ofType: "plist"),
+           let file = FileManager.default.contents(atPath: path),
+           let hs = try? PropertyListDecoder().decode(Score.self, from: file){
+            self.tmp = hs.highscore
         }
     }
 
