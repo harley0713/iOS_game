@@ -11,26 +11,84 @@ import SpriteKit
 
 class MainScene: SKScene,SKPhysicsContactDelegate {
     
-    var mainbgd: SKSpriteNode!
-    var Lwall: SKSpriteNode!
-    var Rwall: SKSpriteNode!
-    var ceiling: SKSpriteNode!
-    var stair: SKSpriteNode!
-    var spike: SKSpriteNode!
-    var stairGenerator: Timer!
-    var startP: SKSpriteNode!
-    var previousX : CGFloat!
-    var player: SKSpriteNode!
-    var P1: SKSpriteNode!
+    var highScore: Int = 0
     var goleft = true
     var goright = false
-    var point = 0
+    var point:Int = 0
+    var bestLabel:  SKLabelNode!
+    var scoreLabel: SKLabelNode!
+    var mainbgd:    SKSpriteNode!
+    var Lwall:      SKSpriteNode!
+    var Rwall:      SKSpriteNode!
+    var ceiling:    SKSpriteNode!
+    var lowerbound: SKSpriteNode!
+    var stair:      SKSpriteNode!
+    var spike:      SKSpriteNode!
+    var startP:     SKSpriteNode!
+    var player:     SKSpriteNode!
+    var P1:         SKSpriteNode!
+    var previousX : CGFloat!
+    var stairGenerator: Timer!
     
      
     override func didMove(to view: SKView) {
+        //getBestScore()
         createScene()
+        physicsWorld.contactDelegate = self
         physicsWorld.gravity = CGVector(dx: 0, dy: -2.0)
         //print(self.size.width)
+        
+        scoreLabel = SKLabelNode()
+        scoreLabel.name = "score"
+        scoreLabel.fontSize = 25
+        scoreLabel.fontColor = .black
+        scoreLabel.zPosition = 2
+        scoreLabel.fontName = "Copperplate"
+        scoreLabel.position = CGPoint(x: self.frame.minX + 80, y: self.frame.maxY - 80)
+        scoreLabel.text = "SCORE: \(point)"
+        self.addChild(scoreLabel)
+        
+        
+        bestLabel = SKLabelNode()
+        bestLabel.name = "score"
+        bestLabel.fontSize = 25
+        bestLabel.fontColor = .black
+        bestLabel.zPosition = 2
+        bestLabel.fontName = "Copperplate"
+        bestLabel.position = CGPoint(x: self.frame.minX + 80, y: self.frame.maxY - 60)
+        bestLabel.text = "BEST: \(highScore)"
+        self.addChild(bestLabel)
+    }
+    
+    func didBegin(_ contact: SKPhysicsContact) {
+        var firstBody = SKPhysicsBody()
+        var secondBody = SKPhysicsBody()
+        firstBody = contact.bodyA
+        secondBody = contact.bodyB
+        
+        if((firstBody.node?.name == "player" && secondBody.node?.name == "stairs") || (firstBody.node?.name == "stairs" && secondBody.node?.name == "player") ){
+            point += 1
+            if(point > highScore){
+                scoreLabel.text = "SCORE: \(point)"
+                bestLabel.text = "BEST: \(point)"
+            }else{
+                scoreLabel.text = "SCORE: \(point)"
+            }
+        }else if((firstBody.node?.name == "player" && secondBody.node?.name == "spikes") || (firstBody.node?.name == "spikes" && secondBody.node?.name == "player") ){
+            self.physicsWorld.speed = 0
+            stairGenerator.invalidate()
+            self.isPaused = true
+            gameover()
+        }else if((firstBody.node?.name == "player" && secondBody.node?.name == "ceiling") || (firstBody.node?.name == "ceiling" && secondBody.node?.name == "player") ){
+            stairGenerator.invalidate()
+            self.isPaused = true
+            gameover()
+        }else if((firstBody.node?.name == "player" && secondBody.node?.name == "lowerBound") || (firstBody.node?.name == "lowerBound" && secondBody.node?.name == "player") ){
+            stairGenerator.invalidate()
+            self.isPaused = true
+            gameover()
+        }
+        
     }
     
     func createScene(){
@@ -81,7 +139,7 @@ class MainScene: SKScene,SKPhysicsContactDelegate {
                 P1.run(jump)
             }
             else if touchnode.name == "right"{
-                let right = SKAction.moveBy(x: 100, y: 0, duration: 0.5)
+                let right = SKAction.moveBy(x: 500, y: 0, duration: 2.5)
                 if(goleft){
                     P1.removeAction(forKey: "left")
                     goleft = false
@@ -90,7 +148,7 @@ class MainScene: SKScene,SKPhysicsContactDelegate {
                 P1.run(right, withKey: "right")
             }
             else if touchnode.name == "left"{
-                let left = SKAction.moveBy(x: -100, y: 0, duration: 0.5)
+                let left = SKAction.moveBy(x: -500, y: 0, duration: 2.5)
                 if(goright){
                     P1.removeAction(forKey: "right")
                     goright = false
@@ -124,10 +182,24 @@ class MainScene: SKScene,SKPhysicsContactDelegate {
     
     @objc func newStep(){
         let randNum = Int(arc4random() % 100)
-        if(randNum > 85){
-            newSpike()
+        if(point > 100){
+            if(randNum > 75){
+                newSpike()
+            }else{
+                newStair()
+            }
+        }else if(point > 50){
+            if(randNum > 80){
+                newSpike()
+            }else{
+                newStair()
+            }
         }else{
-            newStair()
+            if(randNum > 85){
+                newSpike()
+            }else{
+                newStair()
+            }
         }
     }
     
@@ -197,17 +269,32 @@ class MainScene: SKScene,SKPhysicsContactDelegate {
         
         ceiling = SKSpriteNode(imageNamed: "ceiling")
         ceiling.size.width = self.size.width
-        ceiling.size.height = 20;
-        ceiling.physicsBody = SKPhysicsBody(rectangleOf: CGSize(width: self.size.width, height: 20))
+        ceiling.size.height = 30;
+        ceiling.physicsBody = SKPhysicsBody(rectangleOf: CGSize(width: self.size.width, height: 30))
         ceiling.name = "ceiling"
         ceiling.physicsBody?.isDynamic = false
         ceiling.physicsBody?.usesPreciseCollisionDetection = true
         ceiling.physicsBody?.categoryBitMask = 0x1 << 7
         ceiling.physicsBody?.contactTestBitMask = 0x1 << 1
         ceiling.physicsBody?.collisionBitMask = 0x1 << 1
-        ceiling.position = CGPoint(x: self.size.width/2, y: self.size.height - 10)
+        ceiling.position = CGPoint(x: self.size.width/2, y: self.size.height - 15)
         ceiling.zPosition = 1
         self.addChild(ceiling)
+        
+        lowerbound = SKSpriteNode(imageNamed: "ceiling")
+        lowerbound.size.width = self.size.width
+        lowerbound.size.height = 20;
+        lowerbound.physicsBody = SKPhysicsBody(rectangleOf: CGSize(width: self.size.width, height: 20))
+        lowerbound.name = "lowerBound"
+        lowerbound.physicsBody?.isDynamic = false
+        lowerbound.physicsBody?.usesPreciseCollisionDetection = true
+        lowerbound.physicsBody?.categoryBitMask = 0x1 << 8
+        lowerbound.physicsBody?.contactTestBitMask = 0x1 << 1
+        lowerbound.physicsBody?.collisionBitMask = 0x1 << 1
+        lowerbound.position = CGPoint(x: self.frame.midX, y: self.frame.minY-40)
+        lowerbound.yScale = -1
+        lowerbound.zPosition = 1
+        self.addChild(lowerbound)
     }
     
     func newStair(){
@@ -248,7 +335,7 @@ class MainScene: SKScene,SKPhysicsContactDelegate {
         let remove = SKAction.sequence([SKAction.moveTo(y: self.size.height + 150, duration: 7),SKAction.removeFromParent()])
         spike.run(remove)
         
-        spike.physicsBody = SKPhysicsBody(rectangleOf: CGSize(width: 100, height: 30))
+        spike.physicsBody = SKPhysicsBody(rectangleOf: CGSize(width: 60, height: 30))
         spike.physicsBody?.usesPreciseCollisionDetection = true
         spike.physicsBody?.isDynamic = false
         spike.physicsBody?.categoryBitMask = 0x1 << 3
@@ -259,10 +346,16 @@ class MainScene: SKScene,SKPhysicsContactDelegate {
         
     }
     
+   
+    
+        
     func gameover(){
         let endScene = endScene(size: self.size)
         let trans = SKTransition.fade(withDuration: 5)
         endScene.point = point
+        endScene.highScore = self.highScore
+        //let Data = Score(highscore: self.highScore)
+        //self.setBestScore(data: Data)
         self.view?.presentScene(endScene,transition: trans)
         
     }

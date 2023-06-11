@@ -77,6 +77,7 @@ class StartScene: SKScene {
                 self.childNode(withName: "start")?.removeFromParent()
                 labelNode?.run(movesequence,completion: {
                     let mainScene = MainScene(size: self.size)
+                    mainScene.highScore = self.highScore
                     let trans = SKTransition.doorway(withDuration: 1)
                     self.view?.presentScene(mainScene, transition: trans)
                 })
