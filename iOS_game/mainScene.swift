@@ -11,10 +11,6 @@ import SpriteKit
 
 class MainScene: SKScene,SKPhysicsContactDelegate {
     
-    struct Score: Codable{
-        var highScore: Int
-    }
-    var highScore: Int = 0
     var mainbgd: SKSpriteNode!
     var Lwall: SKSpriteNode!
     var Rwall: SKSpriteNode!
@@ -28,13 +24,13 @@ class MainScene: SKScene,SKPhysicsContactDelegate {
     var P1: SKSpriteNode!
     var goleft = true
     var goright = false
+    var point = 0
     
      
     override func didMove(to view: SKView) {
-        self.getBestScore()
         createScene()
         physicsWorld.gravity = CGVector(dx: 0, dy: -2.0)
-        print(self.size.width)
+        //print(self.size.width)
     }
     
     func createScene(){
@@ -45,63 +41,28 @@ class MainScene: SKScene,SKPhysicsContactDelegate {
         mainbgd.zPosition = -1
         self.addChild(mainbgd)
         
-        Lwall = SKSpriteNode(imageNamed: "wall")
-        Lwall.size.width = 20;
-        Lwall.size.height = self.size.height
-        Lwall.physicsBody?.isDynamic = false
-        Lwall.physicsBody?.usesPreciseCollisionDetection = true
-        Lwall.physicsBody?.categoryBitMask = 0x1 << 5
-        Lwall.physicsBody?.contactTestBitMask = 0x1 << 1
-        Lwall.physicsBody?.collisionBitMask = 0x1 << 1
-        Lwall.position = CGPoint(x: 10 , y: self.size.height/2)
-        Lwall.zPosition = 1
-        self.addChild(Lwall)
-        
-        Rwall = SKSpriteNode(imageNamed: "wall")
-        Rwall.size.width = 20;
-        Rwall.size.height = self.size.height
-        Rwall.physicsBody?.usesPreciseCollisionDetection = true
-        Rwall.physicsBody?.isDynamic = false
-        Rwall.physicsBody?.categoryBitMask = 0x1 << 6
-        Rwall.physicsBody?.contactTestBitMask = 0x1 << 1
-        Rwall.physicsBody?.collisionBitMask = 0x1 << 1
-        Rwall.position = CGPoint(x: self.size.width - 10, y: self.size.height/2)
-        Rwall.zPosition = 1
-        self.addChild(Rwall)
-        
-        ceiling = SKSpriteNode(imageNamed: "ceiling")
-        ceiling.size.width = self.size.width
-        ceiling.size.height = 20;
-        ceiling.physicsBody?.isDynamic = false
-        ceiling.physicsBody?.usesPreciseCollisionDetection = true
-        ceiling.physicsBody?.categoryBitMask = 0x1 << 7
-        ceiling.physicsBody?.contactTestBitMask = 0x1 << 1
-        ceiling.physicsBody?.collisionBitMask = 0x1 << 1
-        ceiling.position = CGPoint(x: self.size.width/2, y: self.size.height - 10)
-        ceiling.zPosition = 1
-        self.addChild(ceiling)
-        
         let JumpB = SKSpriteNode(imageNamed: "jumpButton")
         JumpB.name = "jump"
         JumpB.size = CGSize(width: 60, height: 60)
-        JumpB.position = CGPoint(x: self.frame.midX, y: 140)
+        JumpB.position = CGPoint(x: self.frame.midX, y: self.frame.minY + 140)
         JumpB.zPosition = 1
         self.addChild(JumpB)
         
         let RightB = SKSpriteNode(imageNamed: "rightButton")
         RightB.name = "right"
         RightB.size = CGSize(width: 60, height: 60)
-        RightB.position = CGPoint(x: self.frame.midX + 80, y: 100)
+        RightB.position = CGPoint(x: self.frame.midX + 80, y: self.frame.minY + 100)
         RightB.zPosition = 1
         self.addChild(RightB)
         
         let LeftB = SKSpriteNode(imageNamed: "leftButton")
         LeftB.name = "left"
         LeftB.size = CGSize(width: 60, height: 60)
-        LeftB.position = CGPoint(x: self.frame.midX - 80, y: 100)
+        LeftB.position = CGPoint(x: self.frame.midX - 80, y: self.frame.minY + 100)
         LeftB.zPosition = 1
         self.addChild(LeftB)
         
+        createWall()
         startPlatform()
         P1 = createPlayer()
         self.addChild(P1)
@@ -177,7 +138,7 @@ class MainScene: SKScene,SKPhysicsContactDelegate {
         startP.position = CGPoint(x: self.size.width/2, y: 100)
         previousX = self.size.width / 2
         startP.name = "start"
-        startP.physicsBody = SKPhysicsBody(rectangleOf: CGSize(width: 100, height: 20))
+        startP.physicsBody = SKPhysicsBody(rectangleOf: CGSize(width: 150, height: 20))
         startP.physicsBody?.usesPreciseCollisionDetection = true
         startP.physicsBody?.isDynamic = false
         startP.physicsBody?.categoryBitMask = 0x1 << 4
@@ -195,15 +156,58 @@ class MainScene: SKScene,SKPhysicsContactDelegate {
         player.physicsBody = SKPhysicsBody(circleOfRadius: player.size.width/2)
         player.physicsBody?.usesPreciseCollisionDetection = true
         player.physicsBody?.restitution = 0
+        player.physicsBody?.allowsRotation = false
         
-        
+        let mask = UInt32.max
         player.physicsBody?.categoryBitMask = 0x1 << 1
-        player.physicsBody?.contactTestBitMask = 0x1 << 2 | 0x1 << 3 | 0x1 << 4 | 0x1 << 5 | 0x1 << 6 | 0x1 << 7
-        player.physicsBody?.collisionBitMask = 0x1 << 2 | 0x1 << 3 | 0x1 << 4 | 0x1 << 5 | 0x1 << 6 | 0x1 << 7
+        player.physicsBody?.contactTestBitMask = mask
+        player.physicsBody?.collisionBitMask = mask
         
         player.name = "player"
         
         return player
+    }
+    
+    func createWall(){
+        Lwall = SKSpriteNode(imageNamed: "wall")
+        Lwall.size.width = 20;
+        Lwall.size.height = self.size.height
+        Lwall.physicsBody = SKPhysicsBody(rectangleOf: CGSize(width: 20, height: self.size.height))
+        Lwall.physicsBody?.isDynamic = false
+        Lwall.physicsBody?.usesPreciseCollisionDetection = true
+        Lwall.physicsBody?.categoryBitMask = 0x1 << 5
+        Lwall.physicsBody?.contactTestBitMask = 0x1 << 1
+        Lwall.physicsBody?.collisionBitMask = 0x1 << 1
+        Lwall.position = CGPoint(x: 10 , y: self.size.height/2)
+        Lwall.zPosition = 1
+        self.addChild(Lwall)
+        
+        Rwall = SKSpriteNode(imageNamed: "wall")
+        Rwall.size.width = 20;
+        Rwall.size.height = self.size.height
+        Rwall.physicsBody = SKPhysicsBody(rectangleOf: CGSize(width: 20, height: self.size.height))
+        Rwall.physicsBody?.usesPreciseCollisionDetection = true
+        Rwall.physicsBody?.isDynamic = false
+        Rwall.physicsBody?.categoryBitMask = 0x1 << 6
+        Rwall.physicsBody?.contactTestBitMask = 0x1 << 1
+        Rwall.physicsBody?.collisionBitMask = 0x1 << 1
+        Rwall.position = CGPoint(x: self.size.width - 10, y: self.size.height/2)
+        Rwall.zPosition = 1
+        self.addChild(Rwall)
+        
+        ceiling = SKSpriteNode(imageNamed: "ceiling")
+        ceiling.size.width = self.size.width
+        ceiling.size.height = 20;
+        ceiling.physicsBody = SKPhysicsBody(rectangleOf: CGSize(width: self.size.width, height: 20))
+        ceiling.name = "ceiling"
+        ceiling.physicsBody?.isDynamic = false
+        ceiling.physicsBody?.usesPreciseCollisionDetection = true
+        ceiling.physicsBody?.categoryBitMask = 0x1 << 7
+        ceiling.physicsBody?.contactTestBitMask = 0x1 << 1
+        ceiling.physicsBody?.collisionBitMask = 0x1 << 1
+        ceiling.position = CGPoint(x: self.size.width/2, y: self.size.height - 10)
+        ceiling.zPosition = 1
+        self.addChild(ceiling)
     }
     
     func newStair(){
@@ -255,12 +259,12 @@ class MainScene: SKScene,SKPhysicsContactDelegate {
         
     }
     
-    func getBestScore(){
-        if let path = Bundle.main.path(forResource: "score", ofType: "plist"),
-           let file = FileManager.default.contents(atPath: path),
-           let hs = try? PropertyListDecoder().decode(Score.self, from: file){
-            self.highScore = hs.highScore
-        }
+    func gameover(){
+        let endScene = endScene(size: self.size)
+        let trans = SKTransition.fade(withDuration: 5)
+        endScene.point = point
+        self.view?.presentScene(endScene,transition: trans)
+        
     }
     
 }
