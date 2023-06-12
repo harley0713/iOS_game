@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		B8A25CE02A34DC7B00F97440 /* score.plist in Resources */ = {isa = PBXBuildFile; fileRef = B8A25CDF2A34DC7B00F97440 /* score.plist */; };
+		B86570032A369C55006F42A9 /* score.plist in Resources */ = {isa = PBXBuildFile; fileRef = B86570022A369C55006F42A9 /* score.plist */; };
 		B8A25CE42A361B3E00F97440 /* endScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8A25CE32A361B3E00F97440 /* endScene.swift */; };
 		B8E5E2F42A31A9E40021B460 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8E5E2F32A31A9E40021B460 /* AppDelegate.swift */; };
 		B8E5E2FA2A31A9E40021B460 /* GameScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8E5E2F92A31A9E40021B460 /* GameScene.swift */; };
@@ -20,7 +20,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		B8A25CDF2A34DC7B00F97440 /* score.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = score.plist; sourceTree = "<group>"; };
+		B86570022A369C55006F42A9 /* score.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = score.plist; sourceTree = "<group>"; };
 		B8A25CE32A361B3E00F97440 /* endScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = endScene.swift; sourceTree = "<group>"; };
 		B8E5E2F02A31A9E40021B460 /* iOS_game.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = iOS_game.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B8E5E2F32A31A9E40021B460 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -71,8 +71,8 @@
 				B8E5E3022A31A9E70021B460 /* LaunchScreen.storyboard */,
 				B8E5E30C2A31B8380021B460 /* startScene.swift */,
 				B8E5E30E2A31B8520021B460 /* mainScene.swift */,
-				B8A25CDF2A34DC7B00F97440 /* score.plist */,
 				B8A25CE32A361B3E00F97440 /* endScene.swift */,
+				B86570022A369C55006F42A9 /* score.plist */,
 			);
 			path = iOS_game;
 			sourceTree = "<group>";
@@ -136,8 +136,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				B8E5E2FF2A31A9E40021B460 /* Main.storyboard in Resources */,
+				B86570032A369C55006F42A9 /* score.plist in Resources */,
 				B8E5E3012A31A9E70021B460 /* Assets.xcassets in Resources */,
-				B8A25CE02A34DC7B00F97440 /* score.plist in Resources */,
 				B8E5E3042A31A9E70021B460 /* LaunchScreen.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

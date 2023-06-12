@@ -15,14 +15,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
+        let fm = FileManager.default
+        let src = Bundle.main.path(forResource: "Property List", ofType: "plist")
+        let dst = NSHomeDirectory() + "/Documents/Property List.plist"
+        
+        if !fm.fileExists(atPath: dst){
+            try! fm.copyItem(atPath: src!, toPath: dst)
+        }
         /*
-         let fm = FileManager.default
-         let src = Bundle.main.path(forResource: "Property List", ofType: "plist")
-         let dst = NSHomeDirectory() + "/Documents/Property List.plist"
-         
-         if !fm.fileExists(atPath: dst){
-             try! fm.copyItem(atPath: src!, toPath: dst)
-         }
          
          */
         

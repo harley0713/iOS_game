@@ -15,6 +15,7 @@ class MainScene: SKScene,SKPhysicsContactDelegate {
     var goleft = true
     var goright = false
     var point:Int = 0
+    var jumpCount = 0
     var bestLabel:  SKLabelNode!
     var scoreLabel: SKLabelNode!
     var mainbgd:    SKSpriteNode!
@@ -23,11 +24,15 @@ class MainScene: SKScene,SKPhysicsContactDelegate {
     var ceiling:    SKSpriteNode!
     var lowerbound: SKSpriteNode!
     var stair:      SKSpriteNode!
+    var monster:    SKSpriteNode!
     var spike:      SKSpriteNode!
     var startP:     SKSpriteNode!
     var player:     SKSpriteNode!
+    var playerFacing = 1
+    var bullet:     SKSpriteNode!
     var P1:         SKSpriteNode!
     var previousX : CGFloat!
+    var stairX:     CGFloat!
     var stairGenerator: Timer!
     
      
@@ -68,6 +73,17 @@ class MainScene: SKScene,SKPhysicsContactDelegate {
         
         if((firstBody.node?.name == "player" && secondBody.node?.name == "stairs") || (firstBody.node?.name == "stairs" && secondBody.node?.name == "player") ){
             point += 1
+            jumpCount = 0
+            if(point > highScore){
+                scoreLabel.text = "SCORE: \(point)"
+                bestLabel.text = "BEST: \(point)"
+            }else{
+                scoreLabel.text = "SCORE: \(point)"
+            }
+        }else if((firstBody.node?.name == "monster" && secondBody.node?.name == "bullet") || (firstBody.node?.name == "bullet" && secondBody.node?.name == "monster") ){
+            contact.bodyA.node?.removeFromParent()
+            contact.bodyB.node?.removeFromParent()
+            point += 10
             if(point > highScore){
                 scoreLabel.text = "SCORE: \(point)"
                 bestLabel.text = "BEST: \(point)"
@@ -84,6 +100,10 @@ class MainScene: SKScene,SKPhysicsContactDelegate {
             self.isPaused = true
             gameover()
         }else if((firstBody.node?.name == "player" && secondBody.node?.name == "lowerBound") || (firstBody.node?.name == "lowerBound" && secondBody.node?.name == "player") ){
+            stairGenerator.invalidate()
+            self.isPaused = true
+            gameover()
+        }else if((firstBody.node?.name == "player" && secondBody.node?.name == "monster") || (firstBody.node?.name == "monster" && secondBody.node?.name == "player") ){
             stairGenerator.invalidate()
             self.isPaused = true
             gameover()
@@ -120,6 +140,13 @@ class MainScene: SKScene,SKPhysicsContactDelegate {
         LeftB.zPosition = 1
         self.addChild(LeftB)
         
+        let shootB = SKSpriteNode(imageNamed: "shoot")
+        shootB.name = "shoot"
+        shootB.size = CGSize(width: 60, height: 60)
+        shootB.position = CGPoint(x: self.frame.midX, y: self.frame.minY + 60)
+        shootB.zPosition = 1
+        self.addChild(shootB)
+        
         createWall()
         startPlatform()
         P1 = createPlayer()
@@ -134,9 +161,10 @@ class MainScene: SKScene,SKPhysicsContactDelegate {
         for touch in touches {
             let location = touch.location(in: self)
             let touchnode = atPoint(location)
-            if touchnode.name == "jump"{
+            if touchnode.name == "jump" && jumpCount <= 2{
                 let jump = SKAction.moveBy(x: 0, y: 150, duration: 0.3)
                 P1.run(jump)
+                jumpCount += 1
             }
             else if touchnode.name == "right"{
                 let right = SKAction.moveBy(x: 500, y: 0, duration: 2.5)
@@ -144,6 +172,7 @@ class MainScene: SKScene,SKPhysicsContactDelegate {
                     P1.removeAction(forKey: "left")
                     goleft = false
                 }
+                playerFacing = 1
                 goright = true
                 P1.run(right, withKey: "right")
             }
@@ -153,8 +182,15 @@ class MainScene: SKScene,SKPhysicsContactDelegate {
                     P1.removeAction(forKey: "right")
                     goright = false
                 }
+                playerFacing = 0
                 goleft = true
                 P1.run(left, withKey: "left")
+            }
+            else if touchnode.name == "shoot" && playerFacing == 1{
+                rBullet(player)
+            }
+            else if touchnode.name == "shoot" && playerFacing == 0{
+                lBullet(player)
             }
         }
     }
@@ -185,18 +221,27 @@ class MainScene: SKScene,SKPhysicsContactDelegate {
         if(point > 100){
             if(randNum > 75){
                 newSpike()
+            }else if randNum < 20{
+                newStair()
+                newMonster()
             }else{
                 newStair()
             }
         }else if(point > 50){
             if(randNum > 80){
                 newSpike()
+            }else if randNum < 15{
+                newStair()
+                newMonster()
             }else{
                 newStair()
             }
         }else{
             if(randNum > 85){
                 newSpike()
+            }else if randNum < 10{
+                newStair()
+                newMonster()
             }else{
                 newStair()
             }
@@ -222,10 +267,10 @@ class MainScene: SKScene,SKPhysicsContactDelegate {
     
     func createPlayer()->SKSpriteNode{
         player = SKSpriteNode(imageNamed: "player")
-        player.size = CGSize(width: 20, height: 20)
+        player.size = CGSize(width: 25, height: 30)
         player.position = CGPoint(x: self.size.width/2, y: 130)
         
-        player.physicsBody = SKPhysicsBody(circleOfRadius: player.size.width/2)
+        player.physicsBody = SKPhysicsBody(rectangleOf: CGSize(width: 25, height: 30))
         player.physicsBody?.usesPreciseCollisionDetection = true
         player.physicsBody?.restitution = 0
         player.physicsBody?.allowsRotation = false
@@ -238,6 +283,44 @@ class MainScene: SKScene,SKPhysicsContactDelegate {
         player.name = "player"
         
         return player
+    }
+    
+    func rBullet(_ player: SKSpriteNode){
+        bullet = SKSpriteNode(imageNamed: "fire")
+        bullet.size = CGSize(width: 10, height: 10)
+        bullet.position = CGPoint(x: player.position.x, y: player.position.y + 20)
+        let move = SKAction.moveTo(x: self.frame.maxX + 40, duration: 1.0)
+        let remove = SKAction.removeFromParent()
+        let shoot = SKAction.sequence([move,remove])
+        bullet.run(shoot)
+        bullet.name = "bullet"
+        self.addChild(bullet)
+        bullet.physicsBody = SKPhysicsBody(circleOfRadius: 5)
+        bullet.physicsBody?.usesPreciseCollisionDetection = true
+        bullet.physicsBody?.affectedByGravity = false
+        bullet.physicsBody?.categoryBitMask = 0x1 << 10
+        bullet.physicsBody?.contactTestBitMask = 0x1 << 9
+        bullet.physicsBody?.collisionBitMask = 0x1 << 9
+        
+    }
+    
+    func lBullet(_ player: SKSpriteNode){
+        bullet = SKSpriteNode(imageNamed: "fire")
+        bullet.size = CGSize(width: 10, height: 10)
+        bullet.position = CGPoint(x: player.position.x, y: player.position.y + 20)
+        let move = SKAction.moveTo(x: self.frame.minX - 40, duration: 1.0)
+        let remove = SKAction.removeFromParent()
+        let shoot = SKAction.sequence([move,remove])
+        bullet.run(shoot)
+        bullet.name = "bullet"
+        self.addChild(bullet)
+        bullet.physicsBody = SKPhysicsBody(circleOfRadius: 5)
+        bullet.physicsBody?.usesPreciseCollisionDetection = true
+        bullet.physicsBody?.affectedByGravity = false
+        bullet.physicsBody?.categoryBitMask = 0x1 << 10
+        bullet.physicsBody?.contactTestBitMask = 0x1 << 9
+        bullet.physicsBody?.collisionBitMask = 0x1 << 9
+        
     }
     
     func createWall(){
@@ -301,12 +384,12 @@ class MainScene: SKScene,SKPhysicsContactDelegate {
         stair = SKSpriteNode(imageNamed: "normal")
         stair.size = CGSize(width: 100, height: 20)
         let w = self.size.width - 140
-        var x = CGFloat(arc4random()).truncatingRemainder(dividingBy: w) + 70
-        while abs(previousX-x) < 40{
-            x = CGFloat(arc4random()).truncatingRemainder(dividingBy: w) + 70
+        stairX = CGFloat(arc4random()).truncatingRemainder(dividingBy: w) + 70
+        while abs(previousX-stairX) < 40{
+            stairX = CGFloat(arc4random()).truncatingRemainder(dividingBy: w) + 70
         }
-        stair.position = CGPoint(x: x, y: 0)
-        previousX = x
+        stair.position = CGPoint(x: stairX, y: 0)
+        previousX = stairX
         stair.name = "stairs"
         let remove = SKAction.sequence([SKAction.moveTo(y: self.size.height + 150, duration: 7),SKAction.removeFromParent()])
         stair.run(remove)
@@ -315,10 +398,30 @@ class MainScene: SKScene,SKPhysicsContactDelegate {
         stair.physicsBody?.usesPreciseCollisionDetection = true
         stair.physicsBody?.isDynamic = false
         stair.physicsBody?.categoryBitMask = 0x1 << 2
-        stair.physicsBody?.contactTestBitMask = 0x1 << 1
-        stair.physicsBody?.collisionBitMask = 0x1 << 1
+        stair.physicsBody?.contactTestBitMask = 0x1 << 1 | 0x1 << 9
+        stair.physicsBody?.collisionBitMask = 0x1 << 1 | 0x1 << 9
         
         self.addChild(stair)
+    }
+    
+    func newMonster(){
+        monster = SKSpriteNode(imageNamed: "monster")
+        monster.size = CGSize(width: 35, height: 45)
+        monster.position = CGPoint(x: stairX, y: 15)
+        monster.name = "monster"
+        let remove = SKAction.sequence([SKAction.wait(forDuration: 7),SKAction.removeFromParent()])
+        monster.run(remove)
+        
+        monster.physicsBody = SKPhysicsBody(rectangleOf: CGSize(width: 35, height: 40))
+        monster.physicsBody?.usesPreciseCollisionDetection = true
+        monster.physicsBody?.restitution = 0
+        monster.physicsBody?.allowsRotation = false
+        
+        let mask = UInt32.max
+        monster.physicsBody?.categoryBitMask = 0x1 << 9
+        monster.physicsBody?.contactTestBitMask = mask
+        monster.physicsBody?.collisionBitMask = mask
+        self.addChild(monster)
     }
     
     func newSpike(){
