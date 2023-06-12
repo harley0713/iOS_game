@@ -10,11 +10,11 @@ import SpriteKit
 
 class StartScene: SKScene {
     
-    /*
+    
      struct Score: Codable{
          var highScore: Int
      }
-     */
+    
     var highScore = 0
     var path: String = ""
     override func didMove(to view: SKView) {
@@ -35,10 +35,10 @@ class StartScene: SKScene {
         bgd.position = CGPoint(x: self.frame.midX, y: self.frame.midY)
         bgd.zPosition = -1
         
-        let Title = SKLabelNode(text: "STAIRCASE\nTO\nHELL")
+        let Title = SKLabelNode(text: "DOWNSTAIR")
         Title.name = "gameTitle"
         Title.numberOfLines = 0
-        Title.position = CGPoint(x: self.frame.midX - 80, y: self.frame.midY)
+        Title.position = CGPoint(x: self.frame.midX - 80, y: self.frame.midY + 90)
         Title.fontName = "Avenir-Oblique"
         Title.fontColor = .black
         Title.fontSize = 35
@@ -65,7 +65,7 @@ class StartScene: SKScene {
     }
     
     
-    /*
+    
      func getBestScore(){
          if let path = Bundle.main.path(forResource: "score", ofType: "plist"),
             let file = FileManager.default.contents(atPath: path),
@@ -73,7 +73,7 @@ class StartScene: SKScene {
              self.highScore = hs.highScore
          }
      }
-     */
+     
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         let labelNode = self.childNode(withName: "gameTitle")

@@ -10,11 +10,11 @@ import SpriteKit
 
 class endScene: SKScene {
     
-    /*
+    
      struct Score: Codable{
          var highscore: Int
      }
-     */
+    
     var path:String = ""
     var point = 0
     var highScore:Int = 0
@@ -26,6 +26,7 @@ class endScene: SKScene {
     override func didMove(to view: SKView) {
         
         createScene()
+        /*
         path = NSHomeDirectory() + "/Documents/score.plist"
         if let plist = NSMutableDictionary(contentsOfFile: path){
             plist["highScore"] = highScore
@@ -35,11 +36,12 @@ class endScene: SKScene {
                 }
             }
         }
+        */
         
-        //let Data = Score(highscore: self.highScore)
-        //self.setBestScore(data: Data)
-        //self.getBestScore()
-        //print("\(tmp)")
+        let Data = Score(highscore: self.highScore)
+        self.setBestScore(data: Data)
+        self.getBestScore()
+        print("\(tmp)")
         //print(self.size.width)
     }
     
@@ -94,33 +96,33 @@ class endScene: SKScene {
         self.addChild(label1)
         self.addChild(label2)
     }
-    /*
-     func setBestScore(data: Score){
-         if let path = Bundle.main.url(forResource: "score", withExtension: "plist"){
-             do{
-                 let data = try PropertyListEncoder().encode(data)
-                 try data.write(to: path)
-                 print("written")
-                 /*
-                  if let tmp = try? PropertyListDecoder().decode(Score.self, from: data){
-                      self.tmp1 = tmp.highscore
-                      print("\(self.tmp1)")
-                  }
-                  */
-             }catch{
-                 print(error)
-             }
-         }
-     }
-     
-     func getBestScore(){
-         if let path = Bundle.main.path(forResource: "score", ofType: "plist"),
-            let file = FileManager.default.contents(atPath: path),
-            let hs = try? PropertyListDecoder().decode(Score.self, from: file){
-             self.tmp = hs.highscore
-         }
-     }
-     */
+    
+    func setBestScore(data: Score){
+        if let path = Bundle.main.url(forResource: "score", withExtension: "plist"){
+            do{
+                let data = try PropertyListEncoder().encode(data)
+                try data.write(to: path)
+                print("written")
+                /*
+                if let tmp = try? PropertyListDecoder().decode(Score.self, from: data){
+                    self.tmp1 = tmp.highscore
+                    print("\(self.tmp1)")
+                }
+                */
+            }catch{
+                print(error)
+            }
+        }
+    }
+    
+    func getBestScore(){
+        if let path = Bundle.main.path(forResource: "score", ofType: "plist"),
+        let file = FileManager.default.contents(atPath: path),
+        let hs = try? PropertyListDecoder().decode(Score.self, from: file){
+            self.tmp = hs.highscore
+        }
+    }
+    
     
 
     

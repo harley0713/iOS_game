@@ -412,7 +412,7 @@ class MainScene: SKScene,SKPhysicsContactDelegate {
         let remove = SKAction.sequence([SKAction.wait(forDuration: 7),SKAction.removeFromParent()])
         monster.run(remove)
         
-        monster.physicsBody = SKPhysicsBody(rectangleOf: CGSize(width: 35, height: 40))
+        monster.physicsBody = SKPhysicsBody(rectangleOf: CGSize(width: 10, height: 30))
         monster.physicsBody?.usesPreciseCollisionDetection = true
         monster.physicsBody?.restitution = 0
         monster.physicsBody?.allowsRotation = false
