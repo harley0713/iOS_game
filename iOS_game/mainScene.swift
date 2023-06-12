@@ -14,36 +14,36 @@ class MainScene: SKScene,SKPhysicsContactDelegate {
     
     
     var highScore: Int = 0
-    var goleft = true
+    var goleft = true //initial direct
     var goright = false
     var point:Int = 0
     var jumpCount = 0
     var bestLabel:  SKLabelNode!
     var scoreLabel: SKLabelNode!
-    var mainbgd:    SKSpriteNode!
-    var Lwall:      SKSpriteNode!
-    var Rwall:      SKSpriteNode!
-    var ceiling:    SKSpriteNode!
-    var lowerbound: SKSpriteNode!
+    var mainbgd:    SKSpriteNode! //backgroung
+    var Lwall:      SKSpriteNode! //left wall
+    var Rwall:      SKSpriteNode! //right wall
+    var ceiling:    SKSpriteNode! //天花板
+    var lowerbound: SKSpriteNode! //地板 在螢幕外
     var stair:      SKSpriteNode!
-    var bossF:      SKSpriteNode!
-    var monster:    SKSpriteNode!
-    var bossMonster:SKSpriteNode!
-    var spike:      SKSpriteNode!
-    var startP:     SKSpriteNode!
+    var bossF:      SKSpriteNode! //boss level floor
+    var monster:    SKSpriteNode! //regular monster
+    var bossMonster:SKSpriteNode! //boss monster
+    var spike:      SKSpriteNode! //刺樓梯
+    var startP:     SKSpriteNode! //start step
     var player:     SKSpriteNode!
-    var playerFacing = 1
+    var playerFacing = 1          //player看的方向 1 right 0 left
     var bullet:     SKSpriteNode!
-    var P1:         SKSpriteNode!
-    var previousX : CGFloat!
-    var stairX:     CGFloat!
-    var stairGenerator: Timer!
-    var bossLevel: Timer!
-    var bossHitCount = 0
-    var inBossLevel = false
+    var P1:         SKSpriteNode! //player
+    var previousX : CGFloat!      //記錄上一次生成的x座標
+    var stairX:     CGFloat!      //要生成的x座標
+    var stairGenerator: Timer!    //階梯產生timer
+    var bossLevel: Timer!         //boss level階梯timer
+    var bossHitCount = 0          //打中boss次數
+    var inBossLevel = false       //是否在boss關
     
      
-    override func didMove(to view: SKView) {
+    override func didMove(to view: SKView) {    //創建scene,重力,分數label,
         //getBestScore()
         view.isMultipleTouchEnabled = true
         createScene()
@@ -73,13 +73,13 @@ class MainScene: SKScene,SKPhysicsContactDelegate {
         self.addChild(bestLabel)
     }
     
-    func didBegin(_ contact: SKPhysicsContact) {
+    func didBegin(_ contact: SKPhysicsContact) { //判斷各種碰撞
         var firstBody = SKPhysicsBody()
         var secondBody = SKPhysicsBody()
         firstBody = contact.bodyA
         secondBody = contact.bodyB
         
-        if(point % 100 < 10 && point >= 100){
+        if(point % 100 < 10 && point >= 100){ //開始boss level
             if(inBossLevel == false){
                 stairGenerator.invalidate()
                 bossLevel = Timer.scheduledTimer(timeInterval: 1.0, target: self, selector: #selector(bossStep), userInfo: nil, repeats: true)
@@ -159,7 +159,7 @@ class MainScene: SKScene,SKPhysicsContactDelegate {
         }
     }
     
-    func createScene(){
+    func createScene(){     //生成遊戲背景
         mainbgd = SKSpriteNode(imageNamed: "mainbgd")
         mainbgd.size.width = self.size.width
         mainbgd.size.height = self.size.height
@@ -205,7 +205,7 @@ class MainScene: SKScene,SKPhysicsContactDelegate {
     }
     
     
-    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) { //按鈕控制
         for touch in touches {
             let location = touch.location(in: self)
             let touchnode = atPoint(location)
@@ -222,7 +222,9 @@ class MainScene: SKScene,SKPhysicsContactDelegate {
                 }
                 playerFacing = 1
                 goright = true
+                P1.xScale = -1
                 P1.run(right, withKey: "right")
+                
             }
             else if touchnode.name == "left"{
                 let left = SKAction.moveBy(x: -500, y: 0, duration: 2.5)
@@ -232,6 +234,7 @@ class MainScene: SKScene,SKPhysicsContactDelegate {
                 }
                 playerFacing = 0
                 goleft = true
+                P1.xScale = 1
                 P1.run(left, withKey: "left")
             }
             else if touchnode.name == "shoot" && playerFacing == 1{
@@ -242,7 +245,7 @@ class MainScene: SKScene,SKPhysicsContactDelegate {
             }
         }
     }
-    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) { //處理放開按鈕
         if(goright){
             P1.removeAction(forKey: "right")
             goright = false
@@ -253,7 +256,7 @@ class MainScene: SKScene,SKPhysicsContactDelegate {
         }
     }
     
-    override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
+    override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) { //處理放開按鈕
         if(goright){
             P1.removeAction(forKey: "right")
             goright = false
@@ -264,11 +267,11 @@ class MainScene: SKScene,SKPhysicsContactDelegate {
         }
     }
     
-    @objc func bossStep(){
+    @objc func bossStep(){ //boss level stair要的selector
         newStair()
     }
     
-    @objc func newStep(){
+    @objc func newStep(){ //regular stair的selector
         let randNum = Int(arc4random() % 100)
         if(randNum > 85){
             newSpike()
@@ -280,7 +283,7 @@ class MainScene: SKScene,SKPhysicsContactDelegate {
         }
     }
     
-    func startPlatform(){
+    func startPlatform(){ //起始平台
         startP = SKSpriteNode(imageNamed: "normal")
         startP.size = CGSize(width: 150, height: 20)
         let remove = SKAction.sequence([SKAction.moveTo(y: self.size.height + 250, duration: 7),SKAction.removeFromParent()])
@@ -297,7 +300,7 @@ class MainScene: SKScene,SKPhysicsContactDelegate {
         self.addChild(startP)
     }
     
-    func createPlayer()->SKSpriteNode{
+    func createPlayer()->SKSpriteNode{ //玩家生成
         player = SKSpriteNode(imageNamed: "player")
         player.size = CGSize(width: 25, height: 30)
         player.position = CGPoint(x: self.size.width/2, y: 130)
@@ -317,7 +320,7 @@ class MainScene: SKScene,SKPhysicsContactDelegate {
         return player
     }
     
-    func rBullet(_ player: SKSpriteNode){
+    func rBullet(_ player: SKSpriteNode){ //往右子彈
         bullet = SKSpriteNode(imageNamed: "fire")
         bullet.size = CGSize(width: 10, height: 10)
         bullet.position = CGPoint(x: player.position.x, y: player.position.y + 20)
@@ -336,7 +339,7 @@ class MainScene: SKScene,SKPhysicsContactDelegate {
         
     }
     
-    func lBullet(_ player: SKSpriteNode){
+    func lBullet(_ player: SKSpriteNode){ //往左子彈
         bullet = SKSpriteNode(imageNamed: "fire")
         bullet.size = CGSize(width: 10, height: 10)
         bullet.position = CGPoint(x: player.position.x, y: player.position.y + 20)
@@ -355,7 +358,7 @@ class MainScene: SKScene,SKPhysicsContactDelegate {
         
     }
     
-    func createWall(){
+    func createWall(){ //生成牆壁,天花板,地板
         Lwall = SKSpriteNode(imageNamed: "wall")
         Lwall.size.width = 20;
         Lwall.size.height = self.size.height
@@ -413,7 +416,7 @@ class MainScene: SKScene,SKPhysicsContactDelegate {
     }
     
     
-    func bossFloor(){
+    func bossFloor(){ //生成魔王關地板
         bossF = SKSpriteNode(imageNamed: "normal")
         bossF.size = CGSize(width: self.frame.width, height: 20)
         bossF.position = CGPoint(x: self.frame.midX, y: 0)
@@ -431,7 +434,7 @@ class MainScene: SKScene,SKPhysicsContactDelegate {
         self.addChild(bossF)
     }
     
-    func newboss(){
+    func newboss(){ //生成魔王
         bossMonster = SKSpriteNode(imageNamed: "Boss")
         bossMonster.size = CGSize(width: 60, height: 80)
         bossMonster.position = CGPoint(x: self.frame.midX, y: 80)
@@ -451,7 +454,7 @@ class MainScene: SKScene,SKPhysicsContactDelegate {
         self.addChild(bossMonster)
     }
     
-    func newStair(){
+    func newStair(){ //生成階梯
         stair = SKSpriteNode(imageNamed: "normal")
         stair.size = CGSize(width: 100, height: 20)
         let w = self.size.width - 140
@@ -475,7 +478,7 @@ class MainScene: SKScene,SKPhysicsContactDelegate {
         self.addChild(stair)
     }
     
-    func newMonster(){
+    func newMonster(){ //生成小怪
         monster = SKSpriteNode(imageNamed: "monster")
         monster.size = CGSize(width: 35, height: 45)
         monster.position = CGPoint(x: stairX, y: 15)
@@ -495,7 +498,7 @@ class MainScene: SKScene,SKPhysicsContactDelegate {
         self.addChild(monster)
     }
     
-    func newSpike(){
+    func newSpike(){ //生成刺樓梯
         spike = SKSpriteNode(imageNamed: "spike")
         spike.size = CGSize(width: 60, height: 30)
         let w = self.size.width - 140
@@ -523,7 +526,7 @@ class MainScene: SKScene,SKPhysicsContactDelegate {
    
     
         
-    func gameover(){
+    func gameover(){ //遊戲結束呼叫結算頁面
         let endScene = endScene(size: self.size)
         let trans = SKTransition.fade(withDuration: 5)
         endScene.point = point
