@@ -28,6 +28,7 @@ class MainScene: SKScene,SKPhysicsContactDelegate {
     var stair:      SKSpriteNode!
     var bossF:      SKSpriteNode!
     var monster:    SKSpriteNode!
+    var bossMonster:SKSpriteNode!
     var spike:      SKSpriteNode!
     var startP:     SKSpriteNode!
     var player:     SKSpriteNode!
@@ -38,6 +39,8 @@ class MainScene: SKScene,SKPhysicsContactDelegate {
     var stairX:     CGFloat!
     var stairGenerator: Timer!
     var bossLevel: Timer!
+    var bossHitCount = 0
+    var inBossLevel = false
     
      
     override func didMove(to view: SKView) {
@@ -77,7 +80,13 @@ class MainScene: SKScene,SKPhysicsContactDelegate {
         secondBody = contact.bodyB
         
         if(point % 100 < 10 && point >= 100){
-            print("boss")
+            if(inBossLevel == false){
+                stairGenerator.invalidate()
+                bossLevel = Timer.scheduledTimer(timeInterval: 1.0, target: self, selector: #selector(bossStep), userInfo: nil, repeats: true)
+                bossFloor()
+                newboss()
+                inBossLevel = true
+            }
         }
         
         if((firstBody.node?.name == "player" && secondBody.node?.name == "stairs") || (firstBody.node?.name == "stairs" && secondBody.node?.name == "player") ){
@@ -92,7 +101,7 @@ class MainScene: SKScene,SKPhysicsContactDelegate {
         }else if((firstBody.node?.name == "monster" && secondBody.node?.name == "bullet") || (firstBody.node?.name == "bullet" && secondBody.node?.name == "monster") ){
             contact.bodyA.node?.removeFromParent()
             contact.bodyB.node?.removeFromParent()
-            point += 10
+            point += 5
             if(point > highScore){
                 scoreLabel.text = "SCORE: \(point)"
                 bestLabel.text = "BEST: \(point)"
@@ -116,8 +125,38 @@ class MainScene: SKScene,SKPhysicsContactDelegate {
             stairGenerator.invalidate()
             self.isPaused = true
             gameover()
+        }else if((firstBody.node?.name == "player" && secondBody.node?.name == "boss") || (firstBody.node?.name == "boss" && secondBody.node?.name == "player") ){
+            stairGenerator.invalidate()
+            self.isPaused = true
+            gameover()
+        }else if((firstBody.node?.name == "boss" && secondBody.node?.name == "bullet") || (firstBody.node?.name == "bullet" && secondBody.node?.name == "boss") ){
+            bossHitCount += 1
+            
+            if bossHitCount < 15{
+                if(firstBody.node?.name == "bullet"){
+                    contact.bodyA.node?.removeFromParent()
+                }else if(secondBody.node?.name == "bullet"){
+                    contact.bodyB.node?.removeFromParent()
+                }
+            }else if(bossHitCount >= 15){
+                contact.bodyA.node?.removeFromParent()
+                contact.bodyB.node?.removeFromParent()
+                point += 30
+                if(point > highScore){
+                    scoreLabel.text = "SCORE: \(point)"
+                    bestLabel.text = "BEST: \(point)"
+                }else{
+                    scoreLabel.text = "SCORE: \(point)"
+                }
+                bossLevel.invalidate()
+                inBossLevel = false
+                startPlatform()
+                bossHitCount = 0
+                let floor:SKNode = self.childNode(withName: "bossFloor")!
+                floor.removeFromParent()
+                stairGenerator = Timer.scheduledTimer(timeInterval: 1.0, target: self, selector: #selector(newStep), userInfo: nil, repeats: true)
+            }
         }
-        
     }
     
     func createScene(){
@@ -223,6 +262,10 @@ class MainScene: SKScene,SKPhysicsContactDelegate {
             P1.removeAction(forKey: "left")
             goleft = false
         }
+    }
+    
+    @objc func bossStep(){
+        newStair()
     }
     
     @objc func newStep(){
@@ -375,7 +418,7 @@ class MainScene: SKScene,SKPhysicsContactDelegate {
         bossF.size = CGSize(width: self.frame.width, height: 20)
         bossF.position = CGPoint(x: self.frame.midX, y: 0)
         bossF.name = "bossFloor"
-        let generate = SKAction.moveTo(y: 100, duration: 1)
+        let generate = SKAction.moveTo(y: 150, duration: 2)
         bossF.run(generate)
         
         bossF.physicsBody = SKPhysicsBody(rectangleOf: CGSize(width: self.frame.width, height: 20))
@@ -386,6 +429,26 @@ class MainScene: SKScene,SKPhysicsContactDelegate {
         bossF.physicsBody?.collisionBitMask = 0x1 << 1
         
         self.addChild(bossF)
+    }
+    
+    func newboss(){
+        bossMonster = SKSpriteNode(imageNamed: "Boss")
+        bossMonster.size = CGSize(width: 60, height: 80)
+        bossMonster.position = CGPoint(x: self.frame.midX, y: 80)
+        bossMonster.name = "boss"
+        //let firstWalk = SKAction.moveTo(x: self.frame.minX + 50, duration: 2)
+        let Walk = SKAction.sequence([SKAction.moveTo(x: self.frame.maxX - 50, duration: 4),SKAction.moveTo(x: self.frame.minX+50, duration: 4)])
+        let repeatWalk = SKAction.repeatForever(Walk)
+        bossMonster.run(repeatWalk)
+        bossMonster.physicsBody = SKPhysicsBody(circleOfRadius: 30)
+        bossMonster.physicsBody?.usesPreciseCollisionDetection = true
+        bossMonster.physicsBody?.restitution = 0
+        bossMonster.physicsBody?.allowsRotation = false
+        
+        bossMonster.physicsBody?.categoryBitMask = 0x1 << 11
+        bossMonster.physicsBody?.contactTestBitMask = 0x1 << 5 | 0x1 << 6 | 0x1 << 10
+        bossMonster.physicsBody?.collisionBitMask = 0x1 << 5 | 0x1 << 6 | 0x1 << 10
+        self.addChild(bossMonster)
     }
     
     func newStair(){
