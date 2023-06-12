@@ -11,6 +11,8 @@ import SpriteKit
 
 class MainScene: SKScene,SKPhysicsContactDelegate {
     
+    
+    
     var highScore: Int = 0
     var goleft = true
     var goright = false
@@ -24,6 +26,7 @@ class MainScene: SKScene,SKPhysicsContactDelegate {
     var ceiling:    SKSpriteNode!
     var lowerbound: SKSpriteNode!
     var stair:      SKSpriteNode!
+    var bossF:      SKSpriteNode!
     var monster:    SKSpriteNode!
     var spike:      SKSpriteNode!
     var startP:     SKSpriteNode!
@@ -34,10 +37,12 @@ class MainScene: SKScene,SKPhysicsContactDelegate {
     var previousX : CGFloat!
     var stairX:     CGFloat!
     var stairGenerator: Timer!
+    var bossLevel: Timer!
     
      
     override func didMove(to view: SKView) {
         //getBestScore()
+        view.isMultipleTouchEnabled = true
         createScene()
         physicsWorld.contactDelegate = self
         physicsWorld.gravity = CGVector(dx: 0, dy: -2.0)
@@ -70,6 +75,10 @@ class MainScene: SKScene,SKPhysicsContactDelegate {
         var secondBody = SKPhysicsBody()
         firstBody = contact.bodyA
         secondBody = contact.bodyB
+        
+        if(point % 100 < 10 && point >= 100){
+            print("boss")
+        }
         
         if((firstBody.node?.name == "player" && secondBody.node?.name == "stairs") || (firstBody.node?.name == "stairs" && secondBody.node?.name == "player") ){
             point += 1
@@ -218,33 +227,13 @@ class MainScene: SKScene,SKPhysicsContactDelegate {
     
     @objc func newStep(){
         let randNum = Int(arc4random() % 100)
-        if(point > 100){
-            if(randNum > 75){
-                newSpike()
-            }else if randNum < 20{
-                newStair()
-                newMonster()
-            }else{
-                newStair()
-            }
-        }else if(point > 50){
-            if(randNum > 80){
-                newSpike()
-            }else if randNum < 15{
-                newStair()
-                newMonster()
-            }else{
-                newStair()
-            }
+        if(randNum > 85){
+            newSpike()
+        }else if randNum < 10{
+            newStair()
+            newMonster()
         }else{
-            if(randNum > 85){
-                newSpike()
-            }else if randNum < 10{
-                newStair()
-                newMonster()
-            }else{
-                newStair()
-            }
+            newStair()
         }
     }
     
@@ -378,6 +367,25 @@ class MainScene: SKScene,SKPhysicsContactDelegate {
         lowerbound.yScale = -1
         lowerbound.zPosition = 1
         self.addChild(lowerbound)
+    }
+    
+    
+    func bossFloor(){
+        bossF = SKSpriteNode(imageNamed: "normal")
+        bossF.size = CGSize(width: self.frame.width, height: 20)
+        bossF.position = CGPoint(x: self.frame.midX, y: 0)
+        bossF.name = "bossFloor"
+        let generate = SKAction.moveTo(y: 100, duration: 1)
+        bossF.run(generate)
+        
+        bossF.physicsBody = SKPhysicsBody(rectangleOf: CGSize(width: self.frame.width, height: 20))
+        bossF.physicsBody?.usesPreciseCollisionDetection = true
+        bossF.physicsBody?.isDynamic = false
+        bossF.physicsBody?.categoryBitMask = 0x1 << 10
+        bossF.physicsBody?.contactTestBitMask = 0x1 << 1
+        bossF.physicsBody?.collisionBitMask = 0x1 << 1
+        
+        self.addChild(bossF)
     }
     
     func newStair(){

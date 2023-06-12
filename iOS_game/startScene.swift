@@ -11,19 +11,33 @@ import SpriteKit
 class StartScene: SKScene {
     
     
+    /*
      struct Score: Codable{
          var highScore: Int
      }
-    
+     */
+    var userdefault: UserDefaults = UserDefaults.standard
     var highScore = 0
     var path: String = ""
     override func didMove(to view: SKView) {
+        let check = userdefault.object(forKey: "highscore") as! Int?
+        if check == nil{
+            userdefault.set(0, forKey: "highscore")
+        }
+        highScore = userdefault.integer(forKey: "highscore")
+        
         //self.getBestScore()
         //print("\(highScore)")
-        path = NSHomeDirectory() + "/Documents/score.plist"
-        if let plist = NSMutableDictionary(contentsOfFile: path){
-            highScore = plist["highScore"] as! Int
-        }
+        //print("\(highScore)")
+        /*
+         path = NSHomeDirectory() + "/Documents/score.plist"
+         if let plist = NSMutableDictionary(contentsOfFile: path){
+             highScore = plist["highScore"] as! Int
+             print("\(highScore)")
+         }
+         */
+        
+        
         createScene()
         //print(self.size.width)
     }
@@ -66,14 +80,16 @@ class StartScene: SKScene {
     
     
     
-     func getBestScore(){
-         if let path = Bundle.main.path(forResource: "score", ofType: "plist"),
-            let file = FileManager.default.contents(atPath: path),
-            let hs = try? PropertyListDecoder().decode(Score.self, from: file){
-             self.highScore = hs.highScore
-         }
-     }
      
+     /*
+      func getBestScore(){
+          if let path = Bundle.main.path(forResource: "score", ofType: "plist"),
+             let file = FileManager.default.contents(atPath: path),
+             let hs = try? PropertyListDecoder().decode(Score.self, from: file){
+              self.highScore = hs.highScore
+          }
+      }
+      */
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         let labelNode = self.childNode(withName: "gameTitle")
